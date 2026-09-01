@@ -1,4 +1,4 @@
-# Craft / Value — A Working Model of Value Capture in Pipili's Appliqué Economy
+# Pipili Simulator — A Working Model of Value Capture in Pipili's Appliqué Economy
 
 An interactive research publication exploring value distribution in Pipili's appliqué craft cluster, Odisha, India.
 
