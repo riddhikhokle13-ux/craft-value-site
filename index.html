@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipili Simulator | A working model of value capture in Pipili's appliqué economy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,340;9..144,460;9..144,560;9..144,650&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ==========================================================================
+   TOKENS — editorial research-publication system, not a startup dashboard.
+   Ground colour: warm ivory paper. Ink: near-black warm charcoal.
+   One dark register (deep indigo) used only for the opening frame and the
+   Value Capture Map, where "money flowing through the dark" is the idea.
+   Terracotta + ochre are used sparingly, as findings-markers, not decoration.
+   Display face: Fraunces (small size range only — used for numbers & pull
+   quotes). Reading face: Source Serif 4, because this reads as a paper, not
+   an app. Inter is reserved for UI chrome (nav, buttons, labels). Data marks
+   use IBM Plex Mono, ledger-style.
+   ========================================================================== */
+:root{
+  --paper:#F7F2E8;
+  --paper-2:#FBF8F2;
+  --ink:#211C16;
+  --ink-soft:#5B5548;
+  --ink-faint:#8B8474;
+  --rule:rgba(33,28,22,0.15);
+  --rule-soft:rgba(33,28,22,0.08);
+  --navy:#161E31;
+  --navy-2:#0D1424;
+  --terracotta:#B24B2C;
+  --ochre:#B98A2E;
+  --teal:#3A6B62;
+  --on-dark:#F3EEE1;
+  --on-dark-soft:rgba(243,238,225,0.68);
+  --maxw:920px;
+  --maxw-wide:1120px;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:'Source Serif 4', Georgia, serif;
+  font-size:17px;line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.ui{font-family:'Inter',sans-serif;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+h1,h2,h3,h4{font-family:'Fraunces',serif;font-weight:560;line-height:1.12;margin:0;letter-spacing:-0.01em;}
+p{margin:0 0 1em;}
+a{color:inherit;}
+::selection{background:var(--ochre);color:var(--navy-2);}
+:focus-visible{outline:2px solid var(--terracotta);outline-offset:3px;}
+@media (prefers-reduced-motion: reduce){*{animation-duration:0.001ms !important;transition-duration:0.001ms !important;scroll-behavior:auto !important;}}
+img,svg,canvas{max-width:100%;}
+
+/* ---------- top bar ---------- */
+#topbar{position:sticky;top:0;z-index:100;background:var(--paper-2);border-bottom:1px solid var(--rule);}
+.topbar-inner{max-width:var(--maxw-wide);margin:0 auto;display:flex;align-items:center;gap:2px;padding:0 24px;overflow-x:auto;}
+.brandmark{font-family:'Fraunces',serif;font-weight:560;font-size:14.5px;padding:13px 18px 13px 0;white-space:nowrap;flex-shrink:0;border-right:1px solid var(--rule);margin-right:6px;display:flex;align-items:center;gap:7px;}
+.brandmark .dot{width:7px;height:7px;background:var(--terracotta);transform:rotate(45deg);display:inline-block;}
+.jumplink{
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-faint);
+  padding:14px 9px;white-space:nowrap;text-decoration:none;border-bottom:2px solid transparent;flex-shrink:0;
+  letter-spacing:0.01em;
+}
+.jumplink b{color:var(--ink-faint);font-weight:600;margin-right:3px;}
+.jumplink:hover{color:var(--ink);}
+.jumplink.active{color:var(--terracotta);border-bottom-color:var(--terracotta);}
+.jumplink.active b{color:var(--terracotta);}
+
+/* ---------- generic layout ---------- */
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+.wrap-wide{max-width:var(--maxw-wide);margin:0 auto;padding:0 24px;}
+section{padding:76px 0;border-bottom:1px solid var(--rule-soft);}
+section:last-of-type{border-bottom:none;}
+.kicker{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.09em;text-transform:uppercase;color:var(--terracotta);display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.kicker .num{color:var(--ink-faint);}
+h2.q{font-size:clamp(24px,3.4vw,34px);max-width:760px;margin-bottom:6px;}
+.dek{font-size:18px;color:var(--ink-soft);max-width:640px;margin-top:14px;font-family:'Source Serif 4',serif;}
+.rule{border:none;border-top:1px solid var(--rule);margin:32px 0;}
+
+/* ---------- hero ---------- */
+#hero{background:radial-gradient(ellipse at 20% -10%, rgba(185,138,46,0.14), transparent 55%), var(--navy-2);color:var(--on-dark);position:relative;overflow:hidden;}
+#hero .wrap{padding-top:80px;padding-bottom:60px;position:relative;z-index:2;}
+.hero-kicker{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.08em;text-transform:uppercase;color:#D8A957;margin-bottom:20px;}
+.hero-q{font-family:'Fraunces',serif;font-weight:460;font-size:clamp(30px,4.6vw,46px);line-height:1.14;max-width:760px;}
+.hero-q .hl{color:#D8A957;font-style:italic;}
+.hero-sub{font-family:'Source Serif 4',serif;font-size:18px;color:var(--on-dark-soft);max-width:600px;margin-top:22px;}
+.hero-nums{display:flex;gap:36px;flex-wrap:wrap;margin-top:38px;padding-top:26px;border-top:1px solid rgba(243,238,225,0.16);}
+.hero-num b{display:block;font-family:'Fraunces',serif;font-size:26px;color:var(--on-dark);}
+.hero-num span{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--on-dark-soft);text-transform:uppercase;letter-spacing:0.03em;}
+.hero-cta{margin-top:34px;display:flex;gap:14px;flex-wrap:wrap;}
+.btn{
+  font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;
+  padding:11px 20px;border-radius:3px;border:1px solid #D8A957;background:#D8A957;color:var(--navy-2);
+  cursor:pointer;transition:transform .12s;text-decoration:none;display:inline-block;
+}
+.btn:hover{transform:translateY(-1px);}
+.btn-ghost{background:transparent;color:var(--on-dark);border-color:rgba(243,238,225,0.4);}
+.btn-ghost:hover{border-color:var(--on-dark);}
+.btn-line{background:transparent;border-color:var(--navy);color:var(--navy);}
+
+/* start-here pathway */
+.pathway{display:flex;gap:0;flex-wrap:wrap;margin-top:0;}
+.pathway a{flex:1;min-width:220px;padding:16px 18px;border:1px solid var(--rule);text-decoration:none;color:var(--ink);}
+.pathway a + a{border-left:none;}
+.pathway a b{display:block;font-family:'Inter',sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--terracotta);margin-bottom:4px;}
+.pathway a span{font-size:14.5px;font-family:'Source Serif 4',serif;color:var(--ink-soft);}
+@media(max-width:760px){.pathway a{border-left:1px solid var(--rule) !important;border-top:none;}.pathway a:first-child{border-top:1px solid var(--rule);}}
+
+/* ---------- evidence tags ---------- */
+.tag{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.05em;text-transform:uppercase;display:inline-flex;align-items:center;gap:5px;padding:3px 0;}
+.tag i{width:6px;height:6px;border-radius:50%;display:inline-block;}
+.tag.field{color:var(--teal);} .tag.field i{background:var(--teal);}
+.tag.derived{color:var(--terracotta);} .tag.derived i{background:var(--terracotta);}
+.tag.assumption{color:var(--ochre);} .tag.assumption i{background:var(--ochre);}
+
+/* ---------- details / summary progressive disclosure ---------- */
+details{margin:10px 0;border-top:1px solid var(--rule-soft);}
+details > summary{
+  list-style:none;cursor:pointer;padding:11px 0;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;
+  color:var(--ink-soft);display:flex;align-items:center;gap:8px;user-select:none;
+}
+details > summary::-webkit-details-marker{display:none;}
+details > summary::before{content:'+';font-family:'IBM Plex Mono',monospace;color:var(--terracotta);font-size:14px;width:14px;}
+details[open] > summary::before{content:'–';}
+details > summary:hover{color:var(--ink);}
+.details-body{padding:2px 0 16px 22px;font-size:14.5px;color:var(--ink-soft);}
+.details-body p{margin-bottom:0.7em;}
+details.evidence{margin:6px 0 14px;border:none;}
+details.evidence > summary{font-size:11.5px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink-faint);padding:4px 0;font-weight:600;}
+details.evidence > summary::before{font-size:12px;}
+details.evidence .details-body{
+  padding:10px 14px;background:var(--paper-2);border-left:2px solid var(--ochre);font-size:13.5px;margin-top:2px;
+}
+details.evidence .details-body b{color:var(--ink);font-family:'Inter',sans-serif;font-size:11.5px;text-transform:uppercase;letter-spacing:0.03em;display:block;margin-bottom:2px;}
+details.evidence .details-body .ev-block{margin-bottom:10px;}
+details.evidence .details-body .ev-block:last-child{margin-bottom:0;}
+
+/* ---------- stat display ---------- */
+.stat{margin-bottom:26px;}
+.stat .num{font-family:'Fraunces',serif;font-size:38px;color:var(--ink);line-height:1;}
+.stat .lbl{font-family:'Inter',sans-serif;font-size:13.5px;color:var(--ink-soft);margin-top:6px;}
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin:30px 0;}
+@media(max-width:760px){.statrow{grid-template-columns:1fr;gap:20px;}}
+
+/* pull quote */
+.pull{font-family:'Fraunces',serif;font-weight:460;font-style:italic;font-size:22px;line-height:1.4;color:var(--ink);border-left:3px solid var(--ochre);padding-left:22px;margin:28px 0;max-width:680px;}
+.pull cite{display:block;font-family:'IBM Plex Mono',monospace;font-style:normal;font-size:11.5px;color:var(--ink-faint);margin-top:10px;text-transform:none;letter-spacing:0;}
+
+/* ---------- how the model works flow ---------- */
+.flow{display:flex;flex-direction:column;gap:0;margin-top:30px;}
+.flow-step{display:grid;grid-template-columns:120px 1fr;gap:20px;padding:18px 0;border-top:1px solid var(--rule-soft);align-items:baseline;}
+.flow-step:first-child{border-top:1px solid var(--rule);}
+.flow-step .fs-label{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--terracotta);}
+.flow-step .fs-body b{font-family:'Inter',sans-serif;font-size:15px;color:var(--ink);}
+.flow-step .fs-body span{display:block;font-size:14px;color:var(--ink-soft);margin-top:3px;}
+@media(max-width:640px){.flow-step{grid-template-columns:1fr;gap:4px;}}
+
+/* research->model->outcome connector */
+.chain{margin:26px 0;padding:22px 24px;border:1px solid var(--rule);border-left:3px solid var(--terracotta);background:var(--paper-2);}
+.chain-row{font-family:'Inter',sans-serif;font-size:14px;padding:7px 0;}
+.chain-row b{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-faint);display:block;margin-bottom:3px;}
+.chain-arrow{color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;font-size:12px;padding-left:2px;}
+
+/* ---------- simulator ---------- */
+.simgrid{display:grid;grid-template-columns:380px 1fr;gap:40px;align-items:start;margin-top:10px;}
+@media(max-width:960px){.simgrid{grid-template-columns:1fr;}}
+.simpanel{position:sticky;top:66px;}
+.sgroup{margin-bottom:30px;}
+.sgroup .sg-q{font-family:'Fraunces',serif;font-size:16.5px;color:var(--ink);margin-bottom:4px;}
+.sgroup .sg-why{font-size:13px;color:var(--ink-soft);margin-bottom:16px;font-family:'Source Serif 4',serif;}
+.srow{margin-bottom:18px;}
+.srow label{display:flex;justify-content:space-between;align-items:baseline;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);margin-bottom:7px;cursor:pointer;}
+.srow label .val{font-family:'IBM Plex Mono',monospace;color:var(--terracotta);font-weight:600;}
+input[type=range]{width:100%;height:3px;background:var(--rule);border-radius:2px;-webkit-appearance:none;appearance:none;accent-color:var(--terracotta);}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--terracotta);border:2px solid var(--paper-2);box-shadow:0 0 0 1px var(--terracotta);cursor:pointer;margin-top:-1px;}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--terracotta);border:2px solid var(--paper-2);box-shadow:0 0 0 1px var(--terracotta);cursor:pointer;}
+.srow details{margin:2px 0 0;}
+.srow details>summary{font-size:11px;padding:4px 0;color:var(--ink-faint);}
+.srow details .details-body{padding:4px 0 6px 16px;font-size:12.5px;}
+.channel-note{font-size:11.5px;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;margin:-6px 0 14px;}
+
+.kpirow{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--rule);border-bottom:none;}
+@media(max-width:700px){.kpirow{grid-template-columns:repeat(2,1fr);}}
+.kpi{padding:16px 16px;border-bottom:1px solid var(--rule);border-right:1px solid var(--rule);}
+.kpi:nth-child(4n){border-right:none;}
+@media(max-width:700px){.kpi:nth-child(2n){border-right:none;}.kpi:nth-child(4n){border-right:1px solid var(--rule);}}
+.kpi .klabel{font-family:'Inter',sans-serif;font-size:10.5px;text-transform:uppercase;letter-spacing:0.03em;color:var(--ink-faint);}
+.kpi .kval{font-family:'Fraunces',serif;font-size:20px;margin-top:4px;color:var(--ink);}
+
+#whatChanged{border:1px solid var(--navy);background:var(--navy);color:var(--on-dark);padding:20px 22px;margin-top:0;}
+#whatChanged .wc-kicker{font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:0.06em;color:#D8A957;margin-bottom:10px;}
+#whatChanged p{font-family:'Inter',sans-serif;font-size:14px;color:var(--on-dark-soft);margin-bottom:6px;}
+#whatChanged p b{color:var(--on-dark);}
+#whatChanged .wc-why{font-family:'Source Serif 4',serif;font-size:14.5px;color:var(--on-dark);margin-top:10px;font-style:italic;}
+
+.chartblock{margin-top:38px;}
+.chartblock h3{font-size:19px;margin-bottom:4px;}
+.chartblock .cq{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--terracotta);margin-bottom:16px;}
+.chartcap{font-size:13px;color:var(--ink-soft);margin-top:10px;font-family:'Inter',sans-serif;}
+
+/* ---------- value map ---------- */
+.vmap-box{background:var(--navy-2);border-radius:3px;padding:26px;color:var(--on-dark);margin-top:24px;}
+.vmap-legend{display:flex;gap:20px;flex-wrap:wrap;margin-top:16px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--on-dark-soft);}
+.vmap-legend span{display:inline-flex;align-items:center;gap:6px;}
+.vmap-legend i{width:9px;height:9px;display:inline-block;border-radius:2px;}
+.baplot{margin-top:10px;}
+.ba-row{margin-bottom:16px;}
+.ba-row .ba-title{font-family:'Inter',sans-serif;font-size:12.5px;text-transform:uppercase;letter-spacing:0.03em;color:var(--ink-faint);margin-bottom:6px;}
+.ba-bar{display:flex;height:26px;border-radius:2px;overflow:hidden;}
+.ba-seg{height:100%;}
+
+/* ---------- resilience / scenario table ---------- */
+table{width:100%;border-collapse:collapse;font-family:'Inter',sans-serif;font-size:13.5px;}
+th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--rule);}
+th{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink-faint);font-weight:600;}
+td.num,th.num{text-align:right;font-family:'IBM Plex Mono',monospace;}
+tr.best td{color:var(--teal);font-weight:600;}
+.chipset{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0;}
+.chip{padding:7px 14px;border:1px solid var(--navy);border-radius:16px;background:transparent;cursor:pointer;font-size:12.5px;color:var(--navy);font-family:'Inter',sans-serif;}
+.chip.active{background:var(--navy);color:var(--on-dark);}
+
+/* signal chain */
+.sigchain{margin-top:8px;}
+.sig-row{display:grid;grid-template-columns:34px 1fr auto;gap:16px;align-items:center;padding:16px 0;border-top:1px solid var(--rule-soft);}
+.sig-row:first-child{border-top:1px solid var(--rule);}
+.sig-row .sig-arrow{font-family:'IBM Plex Mono',monospace;color:var(--ink-faint);text-align:center;}
+.sig-row .sig-text{font-family:'Inter',sans-serif;font-size:14.5px;color:var(--ink);}
+.sig-row .sig-stat{font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--terracotta);white-space:nowrap;}
+
+/* three returns */
+.returns3{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--rule);margin-top:28px;}
+@media(max-width:820px){.returns3{grid-template-columns:1fr;}}
+.rcard{padding:24px 22px;border-right:1px solid var(--rule);}
+.rcard:last-child{border-right:none;}
+@media(max-width:820px){.rcard{border-right:none;border-bottom:1px solid var(--rule);}.rcard:last-child{border-bottom:none;}}
+.rcard .rc-top{border-top:3px solid var(--terracotta);margin:-24px -22px 18px;padding:24px 22px 0;}
+.rcard.producer .rc-top{border-top-color:var(--ochre);}
+.rcard.heritage .rc-top{border-top-color:var(--teal);}
+.rcard h3{font-size:17px;}
+.rcard .rc-q{font-family:'Inter',sans-serif;font-size:13.5px;color:var(--ink-soft);margin-top:4px;margin-bottom:16px;}
+.rcard table td, .rcard table th{padding:8px 0;}
+.rcard table{font-size:12.5px;}
+
+/* photographs */
+.photogrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:26px;}
+@media(max-width:760px){.photogrid{grid-template-columns:1fr 1fr;}}
+.phototile{aspect-ratio:4/5;background:var(--paper-2);border:1px solid var(--rule-soft);overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;}
+.phototile img{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* documentary */
+.docframe{background:var(--navy-2);border-radius:3px;padding:50px 30px;text-align:center;color:var(--on-dark);border:1px dashed rgba(243,238,225,0.28);}
+.doc-embed-wrap{border-radius:3px;overflow:hidden;background:#000;}
+.chapterlist{list-style:none;padding:0;margin:20px 0 0;font-family:'Inter',sans-serif;font-size:13.5px;}
+.chapterlist li{padding:9px 0;border-top:1px solid var(--rule-soft);display:flex;gap:14px;}
+.chapterlist li .cl-time{font-family:'IBM Plex Mono',monospace;color:var(--terracotta);flex-shrink:0;}
+
+/* methodology */
+.methodgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px;margin-top:26px;}
+@media(max-width:760px){.methodgrid{grid-template-columns:1fr;}}
+.methodcol h4{font-size:12px;text-transform:uppercase;letter-spacing:0.05em;font-family:'Inter',sans-serif;color:var(--ink-faint);margin-bottom:10px;}
+.limitlist{list-style:none;padding:0;margin:0;}
+.limitlist li{padding:12px 0;border-top:1px solid var(--rule-soft);font-size:14.5px;color:var(--ink-soft);}
+.limitlist li b{color:var(--ink);font-family:'Inter',sans-serif;}
+
+footer{padding:50px 24px 60px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint);}
+.small{font-size:13px;color:var(--ink-soft);}
+</style>
+<script>
+// Auto-reload for live preview during development
+(function() {
+  let lastModified = new Date().getTime();
+  setInterval(function() {
+    fetch(window.location.href, { cache: 'no-store' })
+      .then(response => {
+        const modified = new Date(response.headers.get('Last-Modified')).getTime();
+        if (modified > lastModified) {
+          lastModified = modified;
+          window.location.reload();
+        }
+      })
+      .catch(() => {});
+  }, 1500);
+})();
+</script>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="topbar-inner ui">
+    <div class="brandmark"><span class="dot"></span>Craft / Value</div>
+    <a class="jumplink" data-nav="s01" href="#s01"><b>01</b>Question</a>
+    <a class="jumplink" data-nav="s02" href="#s02"><b>02</b>Findings</a>
+    <a class="jumplink" data-nav="s03" href="#s03"><b>03</b>How the model works</a>
+    <a class="jumplink" data-nav="s04" href="#s04"><b>04</b>Simulator</a>
+    <a class="jumplink" data-nav="s05" href="#s05"><b>05</b>Where value goes</a>
+    <a class="jumplink" data-nav="s06" href="#s06"><b>06</b>Resilience</a>
+    <a class="jumplink" data-nav="s07" href="#s07"><b>07</b>Authenticity</a>
+    <a class="jumplink" data-nav="s08" href="#s08"><b>08</b>Signal gap</a>
+    <a class="jumplink" data-nav="s09" href="#s09"><b>09</b>Scenarios</a>
+    <a class="jumplink" data-nav="s10" href="#s10"><b>10</b>Three returns</a>
+    <a class="jumplink" data-nav="s11" href="#s11"><b>11</b>Fieldwork photos</a>
+    <a class="jumplink" data-nav="s12" href="#s12"><b>12</b>Documentary</a>
+    <a class="jumplink" data-nav="s13" href="#s13"><b>13</b>Methodology</a>
+    <a class="jumplink" data-nav="s14" href="#s14"><b>14</b>Sources &amp; note</a>
+  </div>
+</div>
+
+<!-- ============================================================ 01 THE QUESTION ============================================================ -->
+<div id="hero">
+  <div class="wrap">
+    <div class="hero-kicker">Research model: Pipili, Odisha</div>
+    <h1 class="hero-q">Can better signalling, market access and producer participation actually raise how much value reaches the artisan; <span class="hl">not just the enterprise?</span></h1>
+    <p class="hero-sub">This page is based on fieldwork with artisans, traders and consumers in Pipili's appliqué craft cluster. It turns that fieldwork into a working model, so the trade-offs behind the question above become visible rather than assumed.</p>
+    <div class="hero-nums">
+      <div class="hero-num"><b>₹5–10</b><span>Artisan profit on a ₹70 hand-stitched piece, field example</span></div>
+      <div class="hero-num"><b>72.7%</b><span>Consumers would be willing to pay more for hand-stitched work</span></div>
+    </div>
+    <div class="hero-cta">
+      <a class="btn" href="#s04">Try the model</a>
+      <a class="btn btn-ghost" href="#s02">Read what the research found</a>
+    </div>
+  </div>
+</div>
+
+<section id="s01" style="padding-top:56px;padding-bottom:56px;">
+  <div class="wrap">
+    <p class="dek" style="max-width:720px;"> Three ways which you can explore this site.</p>
+    <div class="pathway ui">
+      <a href="#s02"><b>Findings</b><span>Fieldwork</span></a>
+      <a href="#s04"><b>Explore the model</b><span>Simulator.</span></a>
+      <a href="#s13"><b>Technical detail</b><span>Methodology, formulas and model assumptions.</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 02 FINDINGS ============================================================ -->
+<section id="s02">
+  <div class="wrap">
+    <div class="kicker"><span class="num">02</span>What the research found</div>
+    <h2 class="q">A craft with real demand, but a value chain that doesn't pass much of it back.</h2>
+    <p class="dek">Pipili's appliqué work locally known as 'Chandua' supplies both the Jagannath Temple's ritual textiles and a large tourist retail trade along the Puri-Konark road. The fieldwork behind this model looked at all three sides of that trade: the people making it, the people selling it, and the people buying it.</p>
+
+    <div class="pull">"A traditional piece requiring three to four hours of intricate hand-stitching frequently retails for only ₹70, leaving the artisan with a mere ₹5 to ₹10 profit margin. Large, air-conditioned showrooms often purchase these same items cheaply and resell them for ₹500 to ₹700."
+      <cite>Shopkeeper and artisan, interviewed in Konark, 24 February 2026</cite>
+    </div>
+    <p class="small">This is one of the field observations, not a market-wide average, it doesn't apply to every transaction in Pipili. It's used here because it's the clearest anchor for the question the whole model is built to test: where does the value made by a couple hours of skilled hand-stitching actually end up?</p>
+
+    <div class="statrow">
+      <div class="stat">
+        <div class="num">76.5%</div>
+        <div class="lbl">of surveyed traders sell primarily to local tourists</div>
+        <details class="evidence"><summary>Source</summary><div class="details-body">
+          <div class="ev-block"><b>Source</b>Trader survey, n = 17.</div>
+          <div class="ev-block"><b>Finding</b>13 of 17 traders reported local tourists as their main customer segment; 0% reported using online markets.</div>
+          <div class="ev-block"><b>Why it's in the model</b>This is the empirical basis for treating the current channel mix as tourist-concentrated, and for the −30% tourist-demand shock used in the resilience section.</div>
+        </div></details>
+      </div>
+      <div class="stat">
+        <div class="num">72.7%</div>
+        <div class="lbl">of surveyed consumers would pay more for hand-stitched work</div>
+        <details class="evidence"><summary>Source</summary><div class="details-body">
+          <div class="ev-block"><b>Source</b>Consumer survey, n = 11.</div>
+          <div class="ev-block"><b>Finding</b>8 of 11 respondents said yes; 18.2% said no; 9.1% said maybe.</div>
+          <div class="ev-block"><b>Why it's in the model</b>This motivates the authenticity–willingness-to-pay relationship tested in section 07 — treated there as an illustrative assumption, not a statistical estimate, given the small sample.</div>
+        </div></details>
+      </div>
+      <div class="stat">
+        <div class="num">57.1%</div>
+        <div class="lbl">of artisans are unaware of their own GI protection</div>
+        <details class="evidence"><summary>Source</summary><div class="details-body">
+          <div class="ev-block"><b>Source</b>Artisan survey, n = 21.</div>
+          <div class="ev-block"><b>Finding</b>Pipili appliqué has held a Geographical Indication tag since 2008; more than half of surveyed artisans did not know this. Separately, 94.1% of surveyed traders do not advertise the GI tag.</div>
+          <div class="ev-block"><b>Why it's in the model</b>This is the empirical basis for the Value Signal Gap in section 08.</div>
+        </div></details>
+      </div>
+    </div>
+
+    <details><summary>A few more findings behind the model</summary>
+      <div class="details-body">
+        <p><b>71.4%</b> of artisans learned the craft through family, and the remaining 28.6% work on it independently, the craft is still substantially transmitted intergenerationally.</p>
+        <p>The majority of artisans report earning <b>₹10,000 - ₹20,000 a month</b> from appliqué work; a further part-time cohort earns up to ₹5,000, irregularly.</p>
+        <p><b>58.8%</b> of traders reported declining sales or profitability over the previous ten years.</p>
+        <p><b>63.6%</b> of surveyed consumers report that they check whether a piece is genuinely handmade before buying it.</p>
+        <p class="small">Full sample details, methods and limitations are in section 13.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============================================================ 03 HOW THE MODEL WORKS ============================================================ -->
+<section id="s03">
+  <div class="wrap">
+    <div class="kicker"><span class="num">03</span>The Model</div>
+    <h2 class="q"></h2>
+    <p class="dek">Every input in the following simulator traces back to something observed in Pipili, and every output is calculated live from those inputs.</p>
+
+    <div class="flow">
+      <div class="flow-step"><div class="fs-label">Fieldwork</div><div class="fs-body"><b>Observations from Pipili.</b><span>Interviews, surveys and focus groups with artisans, traders and consumers, plus direct observation of workshops, showrooms and the temple.</span></div></div>
+      <div class="flow-step"><div class="fs-label">Findings</div><div class="fs-body"><b>What those observations suggest.</b><span>Patterns like tourist concentration, thin artisan margins, low GI awareness, and a real consumer appetite for verified handwork.</span></div></div>
+      <div class="flow-step"><div class="fs-label">Model</div><div class="fs-body"><b> Relationships to variables.</b><span>12 inputs covering market channels, pricing, cost structure and how value is shared with the producer chosen because the fieldwork gave a reason to include them, and no others.</span></div></div>
+      <div class="flow-step"><div class="fs-label">Scenario</div><div class="fs-body"><b>What changes</b><span>Price, channel mix, authenticity positioning, producer share, and so on, one variable or several at once.</span></div></div>
+      <div class="flow-step"><div class="fs-label">Outcome</div><div class="fs-body"><b>Model calculations</b><span>Revenue, margin, break-even, producer income, income per hour, and how exposed the business is to a demand shock.</span></div></div>
+      <div class="flow-step"><div class="fs-label">Interpretation</div><div class="fs-body"><b>What it means, and what it doesn't.</b><span>Every outcome is shown next to a note on the mechanism driving it.</span></div></div>
+    </div>
+
+    <div class="rule"></div>
+    <p class="small ui" style="max-width:640px;">Three labels recur throughout this page: <span class="tag field"><i></i>field observed</span> for something the fieldwork measured directly, <span class="tag derived"><i></i>model derived</span> for something the simulator calculates, and <span class="tag assumption"><i></i>model assumption</span> for a parameter introduced to make the scenario model run where the fieldwork alone can't determine a number. Keeping these separate is the point.</p>
+  </div>
+</section>
+
+<!-- ============================================================ 04 SIMULATOR ============================================================ -->
+<section id="s04">
+  <div class="wrap-wide">
+    <div class="kicker"><span class="num">04</span>Explore the model</div>
+    <h2 class="q">Change the assumptions.</h2>
+    <p class="dek">Twelve inputs, grouped by the question each group answers. Every other number on this page is calculated from these. Nothing else is adjustable.</p>
+
+    <div class="simgrid">
+      <div class="simpanel">
+        <div class="sgroup">
+          <div class="sg-q">Where are customers coming from?</div>
+          <div class="sg-why">76.5% of traders currently sell mainly to tourists, with no online sales reported; this group sets how concentrated that is.</div>
+          <div class="srow"><label for="touristShare">Tourist share <span class="val" id="v-touristShare"></span></label><input type="range" id="touristShare" min="0" max="100" step="1">
+            <details><summary>Why is this here?</summary><div class="details-body">Trader fieldwork points to strong dependence on tourist footfall. This variable lets one test how a concentrated customer base affects resilience later on.</div></details>
+          </div>
+          <div class="srow"><label for="dtcShare">Direct-to-consumer share <span class="val" id="v-dtcShare"></span></label><input type="range" id="dtcShare" min="0" max="100" step="1"></div>
+          <div class="srow"><label for="institutionalShare">Institutional share <span class="val" id="v-institutionalShare"></span></label><input type="range" id="institutionalShare" min="0" max="100" step="1"></div>
+          <div class="channel-note" id="channelNote">Tourist + direct + institutional always sum to 100%;moving one rebalances the other two.</div>
+        </div>
+
+        <div class="sgroup">
+          <div class="sg-q">What is being sold?</div>
+          <div class="sg-why">Price and authenticity together define the product's position in the market.</div>
+          <div class="srow"><label for="price">Average selling price <span class="val" id="v-price"></span></label><input type="range" id="price" min="120" max="1200" step="10"></div>
+          <div class="srow"><label for="handmadeLevel">Handmade / authenticity level <span class="val" id="v-handmadeLevel"></span></label><input type="range" id="handmadeLevel" min="0" max="100" step="1">
+            <details><summary>Why is this here?</summary><div class="details-body">72.7% of surveyed consumers said they'd pay more for hand-stitched work. This variable lets one test whether that stated preference could plausibly translate into price and demand.</div></details>
+          </div>
+        </div>
+
+        <div class="sgroup">
+          <div class="sg-q">What does it cost to sell?</div>
+          <div class="sg-why">Materials, labour, acquiring a customer, and how often they come back.</div>
+          <div class="srow"><label for="materialCost">Material cost, per unit <span class="val" id="v-materialCost"></span></label><input type="range" id="materialCost" min="20" max="400" step="5"></div>
+          <div class="srow"><label for="labourHours">Labour hours, per unit <span class="val" id="v-labourHours"></span></label><input type="range" id="labourHours" min="0.5" max="12" step="0.5"></div>
+          <div class="srow"><label for="labourCostHour">Target labour cost, per hour <span class="val" id="v-labourCostHour"></span></label><input type="range" id="labourCostHour" min="10" max="150" step="5"></div>
+          <div class="srow"><label for="cac">Customer acquisition cost <span class="val" id="v-cac"></span></label><input type="range" id="cac" min="0" max="300" step="5"></div>
+          <div class="srow"><label for="repeatPurchase">Repeat purchase rate <span class="val" id="v-repeatPurchase"></span></label><input type="range" id="repeatPurchase" min="0" max="80" step="1"></div>
+        </div>
+
+        <div class="sgroup" style="margin-bottom:8px;">
+          <div class="sg-q">Who captures the value?</div>
+          <div class="sg-why">The field observation of ₹5–10 artisan profit against ₹500–700 resale is what this group exists to interrogate.</div>
+          <div class="srow"><label for="producerValueShare">Producer value share, of final price <span class="val" id="v-producerValueShare"></span></label><input type="range" id="producerValueShare" min="2" max="60" step="1">
+            <details><summary>Why is this here?</summary><div class="details-body">The fieldwork found a large gap between what consumers pay and what producers receive. This variable tests how changing that share affects producer income and what it costs the enterprise to raise it.</div></details>
+          </div>
+          <div class="srow"><label for="womensParticipation">Women's participation in higher-value tasks <span class="val" id="v-womensParticipation"></span></label><input type="range" id="womensParticipation" min="12" max="90" step="1">
+            <details><summary>Why is this here?</summary><div class="details-body">Fieldwork describes women's labour as concentrated in stitching and finishing, with cutting, design and sales largely controlled by men. This tests the income effect of shifting that balance using a stated multiplier. * This is not an invented wage figure (see Methodology).</div></details>
+          </div>
+        </div>
+        <button class="btn btn-line ui" style="width:100%;" onclick="resetToBaseline()">Reset to the Pipili baseline</button>
+      </div>
+
+      <div>
+        <div class="kpirow">
+          <div class="kpi"><div class="klabel">Monthly units <span class="tag derived" style="display:block;margin-top:2px;"><i></i></span></div><div class="kval mono" id="k-units">—</div></div>
+          <div class="kpi"><div class="klabel">Monthly revenue</div><div class="kval mono" id="k-revenue">—</div></div>
+          <div class="kpi"><div class="klabel">Contribution margin</div><div class="kval mono" id="k-margin">—</div></div>
+          <div class="kpi"><div class="klabel">Enterprise profit</div><div class="kval mono" id="k-profit">—</div></div>
+          <div class="kpi"><div class="klabel">Producer income / month</div><div class="kval mono" id="k-pincome">—</div></div>
+          <div class="kpi"><div class="klabel">Producer income / hour</div><div class="kval mono" id="k-phour">—</div></div>
+          <div class="kpi"><div class="klabel">Producer value capture</div><div class="kval mono" id="k-capture">—</div></div>
+          <div class="kpi"><div class="klabel">Break-even, units/month</div><div class="kval mono" id="k-breakeven">—</div></div>
+        </div>
+
+        <div id="whatChanged" aria-live="polite">
+          <div class="wc-kicker">What changed</div>
+          <div id="wc-body"><p>Move any control on the left: this panel will explain..</p></div>
+        </div>
+
+        <div class="chartblock">
+          <h3>Where each rupee of price goes</h3>
+          <div class="cq">Materials, producer, acquisition, channel costs, or the enterprise. Who is actually being paid?</div>
+          <canvas id="chartPriceSplit" height="95"></canvas>
+          <p class="chartcap">Each bar segment is a share of the current selling price of <span class="mono" id="capPrice"></span>. This is the same split shown as a flow diagram in section 05.</p>
+        </div>
+
+        <div class="chartblock">
+          <h3>Producer's actual pay, per hour, against the target wage you set</h3>
+          <div class="cq">Is the producer-value-share that is set enough to clear the labour cost per hour that has been set. Or is this the ₹70-item pattern again?</div>
+          <canvas id="chartWageGap" height="80"></canvas>
+          <p class="chartcap" id="wageGapCaption"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 05 VALUE CAPTURE MAP ============================================================ -->
+<section id="s05">
+  <div class="wrap">
+    <div class="kicker"><span class="num">05</span>Where does the money go</div>
+    <h2 class="q">Where does the customer's <span class="mono" id="titlePrice">₹450</span> actually go?</h2>
+    <p class="dek">Every rupee a consumer pays for one piece splits five ways. This updates live from the simulator above, move a slider there, and come back here to see the split change.</p>
+
+    <div class="vmap-box">
+      <svg id="vcmSvg" viewBox="0 0 1000 380" width="100%" style="max-width:100%;height:auto;" role="img" aria-label="Flow diagram of how the consumer price splits between materials, producer, acquisition cost, channel cost and enterprise margin"></svg>
+      <div class="vmap-legend" id="vcmLegend"></div>
+    </div>
+
+    <h3 style="font-size:18px;margin-top:36px;">Before and after: your baseline vs. your current scenario</h3>
+    <div class="baplot">
+      <div class="ba-row"><div class="ba-title">Pipili baseline</div><div class="ba-bar" id="baBarBase"></div></div>
+      <div class="ba-row"><div class="ba-title">Your current scenario</div><div class="ba-bar" id="baBarNow"></div></div>
+    </div>
+    <p id="baSummary" class="small" style="margin-top:10px;"></p>
+
+    <div class="rule"></div>
+    <p class="pull" style="font-size:17px;">Field observation: showroom resale (₹500–700) against artisan retail (₹70) implies intermediaries can capture seven to ten times the value the producing artisan receives for a comparable object. This map lets you set that split.</p>
+  </div>
+</section>
+
+<!-- ============================================================ 06 RESILIENCE ============================================================ -->
+<section id="s06">
+  <div class="wrap">
+    <div class="kicker"><span class="num">06</span>Stress-testing the channel mix</div>
+    <h2 class="q">What happens if tourist demand falls by 30%?</h2>
+    <p class="dek">76.5% of traders currently depend on tourists as their primary customer, with no reported online sales. That's a concentrated position, this section asks what a demand shock does to it, and whether spreading across channels would actually help.</p>
+
+    <div class="chipset ui">
+      <button class="chip active" id="shockBtn30" onclick="setShock(30)">−30% tourist demand</button>
+      <button class="chip" id="shockBtn50" onclick="setShock(50)">−50% tourist demand</button>
+      <button class="chip" id="shockBtn0" onclick="setShock(0)">No shock</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;" class="respair">
+      <div class="chartblock" style="margin-top:0;">
+        <h3 style="font-size:17px;">Revenue: your mix vs. a diversified mix</h3>
+        <canvas id="chartResilience" height="140"></canvas>
+      </div>
+      <div class="chartblock" style="margin-top:0;">
+        <h3 style="font-size:17px;">Producer income under the same shock</h3>
+        <canvas id="chartResilienceProducer" height="140"></canvas>
+      </div>
+    </div>
+    <style>@media(max-width:760px){.respair{grid-template-columns:1fr !important;}}</style>
+
+    <table style="margin-top:26px;">
+      <tr><th>Measure</th><th class="num">Your channel mix</th><th class="num">Diversified 33/33/34</th></tr>
+      <tr><td>Revenue exposed to the shock</td><td class="num" id="res-exposure">—</td><td class="num" id="res-exposure-div">—</td></tr>
+    </table>
+    <p class="dek" style="margin-top:20px;font-size:15.5px;" id="res-explain"></p>
+    <p class="small">The model does not assume diversification is automatically better; a diversified mix can also mean lower reach in the channel that currently works best. It shows the exposure trade-off implied by your specific mix, under this specific shock.</p>
+  </div>
+</section>
+
+<!-- ============================================================ 07 AUTHENTICITY ============================================================ -->
+<section id="s07">
+  <div class="wrap">
+    <div class="kicker"><span class="num">07</span>Pricing authenticity</div>
+    <h2 class="q">Can authenticity justify a higher price?</h2>
+    <p class="dek">72.7% of consumers said yes, in principle. This section tests what that would mean in practice and shows that "more authentic" is not automatically "more profitable," because higher authenticity also tends to mean more labour time per piece.</p>
+
+    <div class="chartblock" style="margin-top:10px;">
+      <h3>Modelled demand and producer value capture, as authenticity rises</h3>
+      <div class="cq">Does the demand and price effect outweigh the extra labour it usually takes to get there?</div>
+      <canvas id="chartAuthenticity" height="110"></canvas>
+      <p class="chartcap">The dashed reference marks your current setting in the simulator. Curve assumption: demand rises by up to <span class="mono" id="authAssumeDemand"></span>% and willingness to pay by up to <span class="mono" id="authAssumeWTP"></span>% moving from 0 to 100 on the authenticity scale. Both <span class="tag assumption"><i></i>model assumption</span>, editable in section 13.</p>
+    </div>
+    <p class="small" style="margin-top:6px;">Due to a smaller consumer sample, this relationship is illustrative and inspectable, not a statistically estimated price elasticity. The report is explicit that its limited consumer sample cannot surely support that claim.</p>
+  </div>
+</section>
+
+<!-- ============================================================ 08 VALUE SIGNAL GAP ============================================================ -->
+<section id="s08">
+  <div class="wrap">
+    <div class="kicker"><span class="num">08</span>The signal, and why it isn't landing</div>
+    <h2 class="q">Is the value of authenticity actually reaching the customer?</h2>
+    <p class="dek">Pipili appliqué has held Geographical Indication protection since 2008; a legal signal of authenticity and origin. In practice, that signal breaks down well before it reaches the point of sale.</p>
+
+    <div class="sigchain">
+      <div class="sig-row"><div class="sig-arrow">01</div><div class="sig-text">GI protection exists for Pipili appliqué, in law, since 2008.</div><div class="sig-stat"></div></div>
+      <div class="sig-row"><div class="sig-arrow">↓</div><div class="sig-text">But <b>57.1%</b> of surveyed artisans don't know they hold it.</div><div class="sig-stat">57.1%</div></div>
+      <div class="sig-row"><div class="sig-arrow">↓</div><div class="sig-text">And <b>94.1%</b> of surveyed traders don't advertise it at the point of sale.</div><div class="sig-stat">94.1%</div></div>
+      <div class="sig-row"><div class="sig-arrow">↓</div><div class="sig-text">Yet <b>63.6%</b> of consumers say they already try to verify handmade authenticity.</div><div class="sig-stat">63.6%</div></div>
+      <div class="sig-row"><div class="sig-arrow">↓</div><div class="sig-text">And <b>72.7%</b> say they would pay more for it, if they could be confident of it.</div><div class="sig-stat">72.7%</div></div>
+    </div>
+
+    <div class="chartblock">
+      <h3>The same figures, side by side</h3>
+      <canvas id="chartSignalGap" height="150"></canvas>
+    </div>
+
+    <p class="dek" style="margin-top:10px;font-size:16.5px;"><b>The open question:</b> could closing the gap between "consumers already verify and would pay more" and "almost no one is communicating the legal signal that would support that" convert existing cultural value into economic value? The report documents these figures as a correlational pattern. This model does not, claim that improving signalling would causally move willingness to pay by any specific amount.</p>
+  </div>
+</section>
+
+<!-- ============================================================ 09 SCENARIOS ============================================================ -->
+<section id="s09">
+  <div class="wrap-wide">
+    <div class="kicker"><span class="num">09</span>Comparing strategic postures</div>
+    <h2 class="q">Four ways to run this business, using the same twelve variables</h2>
+    <p class="dek">None of the formulas change between these four scenarios, only the inputs do. Toggle any of them off to compare a smaller set.</p>
+
+    <div class="chipset ui" id="scenarioPicker"></div>
+
+    <div class="chartblock" style="margin-top:0;">
+      <canvas id="chartScenarios" height="120"></canvas>
+    </div>
+
+    <table style="margin-top:24px;" id="scenarioTable"></table>
+
+    <div id="scenarioInterpretation" style="margin-top:26px;"></div>
+
+    <details style="margin-top:10px;">
+      <summary>Test whether this conclusion holds up under different assumptions</summary>
+      <div class="details-body">
+        <p>The comparison above depends on model assumptions, not just on the scenario inputs. This table recomputes the <b>current / base</b> scenario at low, central and high settings of three assumptions that are hardest to pin down from the consumer sample and a short fieldwork window.</p>
+        <div id="sensitivityTable"></div>
+        <p class="small" style="margin-top:10px;">If producer income and value capture stay in a similar order across low/central/high, the strategic conclusion is reasonably robust to that assumption. If they swing a great deal, treat the conclusion as sensitive to it.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============================================================ 10 THREE RETURNS ============================================================ -->
+<section id="s10">
+  <div class="wrap-wide">
+    <div class="kicker"><span class="num">10</span>What the model asks us to protect</div>
+    <h2 class="q">Three things that can move in different directions</h2>
+    <p class="dek">Raising producer value share, for instance, tends to help the return to producer and squeeze the return to enterprise. There is no single "impact score" here on purpose — collapsing these into one number would hide exactly the trade-off this model exists to surface.</p>
+
+    <div class="returns3">
+      <div class="rcard enterprise">
+        <div class="rc-top"></div>
+        <h3>Return to enterprise</h3>
+        <div class="rc-q">Can the business sustain itself?</div>
+        <table>
+          <tr><td>Monthly revenue</td><td class="num" id="ed-rev"></td></tr>
+          <tr><td>Contribution margin</td><td class="num" id="ed-margin"></td></tr>
+          <tr><td>Enterprise profit</td><td class="num" id="ed-profit"></td></tr>
+          <tr><td>Break-even, units/month</td><td class="num" id="ed-be"></td></tr>
+        </table>
+      </div>
+      <div class="rcard producer">
+        <div class="rc-top"></div>
+        <h3>Return to producer</h3>
+        <div class="rc-q">Does more value reach the people doing the work?</div>
+        <table>
+          <tr><td>Producer income / month</td><td class="num" id="pd-inc"></td></tr>
+          <tr><td>Income / labour hour</td><td class="num" id="pd-hr"></td></tr>
+          <tr><td>vs. stated target wage</td><td class="num" id="pd-gap"></td></tr>
+          <tr><td>Women's higher-value uplift</td><td class="num" id="pd-women"></td></tr>
+        </table>
+      </div>
+      <div class="rcard heritage">
+        <div class="rc-top"></div>
+        <h3>Return to heritage</h3>
+        <div class="rc-q">Does the model support the craft continuing?</div>
+        <table>
+          <tr><td>Handmade / authenticity level</td><td class="num" id="hd-auth"></td></tr>
+          <tr><td>GI &amp; awareness signal strength</td><td class="num" id="hd-gi"></td></tr>
+          <tr><td>Women in higher-value tasks</td><td class="num" id="hd-women"></td></tr>
+        </table>
+        <p class="small" style="margin-top:12px;">Qualitative evidence: 71.4% of artisans learned the craft through family, and artisans in the focus groups described teaching newcomers as a deliberate act against the craft "only being seen in museums." Knowledge continuity is real but not reducible to a number, so none is forced here.</p>
+      </div>
+    </div>
+    <p class="small" style="margin-top:18px;max-width:720px;">Environmental note, illustrative only: a higher handmade share is associated in the fieldwork with more traditional-material use and less reliance on synthetic fabric substitution, which the report describes as a cost-driven trend, not one this model measures directly. <span id="hd-env-inline"></span></p>
+  </div>
+</section>
+
+<!-- ============================================================ 11 PHOTOGRAPHS ============================================================ -->
+<section id="s11">
+  <div class="wrap-wide">
+    <div class="kicker"><span class="num">11</span>Fieldwork photographs</div>
+    <h2 class="q">The craft, in the places it's actually made and sold</h2>
+    <p class="dek"> Each image speaks to the research.</p>
+    <div class="photogrid" id="photoGrid"></div>
+    <p class="small" style="margin-top:16px;">Consent was given to use these photographs by the subjects depicted.</p>
+  </div>
+</section>
+
+<!-- ============================================================ 12 DOCUMENTARY ============================================================ -->
+<section id="s12">
+  <div class="wrap">
+    <div class="kicker"><span class="num">12</span>Qualitative evidence</div>
+    <h2 class="q">Listen to the people behind the numbers</h2>
+    <p class="dek">The documentary made from these field interviews carries dimensions of production, labour, market access and craft identity that a survey statistic can't. An artisan's pause before answering a question about fair pay says something a percentage doesn't.</p>
+
+    <div id="docContainer">
+      <div class="docframe">
+        <h3 style="color:var(--on-dark);font-size:19px;">Documentary</h3>
+        <p style="color:var(--on-dark-soft);max-width:480px;margin:12px auto 0;font-size:14px;">Put your video next to this page as <span class="mono">documentary.mp4</span> and it will appear here automatically.</p>
+        <div style="text-align:left;max-width:600px;margin:24px auto 0;background:var(--paper-2);color:var(--ink);border-radius:3px;padding:20px 22px;">
+          <p class="ui" style="font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--terracotta);font-weight:600;margin-bottom:10px;">Local video ready</p>
+          <p class="small" style="margin-bottom:10px;"><b>Use the local file</b> — name your video exactly <span class="mono">documentary.mp4</span> and keep it in the same folder as this HTML file.</p>
+          <p class="small"><b>Use an embed instead</b> — set <span class="mono">DOCUMENTARY_EMBED_URL</span> near the top of the script if you prefer a YouTube/Vimeo link.</p>
+        </div>
+      </div>
+    </div>
+    <ul class="chapterlist" id="chapterList"></ul>
+    <p class="small" style="margin-top:14px;">This documentary was independently shot by the research team </p>
+  </div>
+</section>
+
+<!-- ============================================================ 13 METHODOLOGY ============================================================ -->
+<section id="s13">
+  <div class="wrap">
+    <div class="kicker"><span class="num">13</span>Methodology</div>
+    <h2 class="q">Where the evidence came from, and what it can't tell us</h2>
+
+    <div class="methodgrid">
+      <div class="methodcol"><h4>Fieldwork</h4><p style="font-size:15px;">Five days, Pipili, Bhubaneswar, Konark, and Puri, Odisha.</p></div>
+      <div class="methodcol"><h4>Participants</h4><p style="font-size:15px;">21 artisans · 17 traders · 11 consumers · two women-artisan focus groups (~20 participants)</p></div>
+      <div class="methodcol"><h4>Methods</h4><p style="font-size:15px;">Structured surveys, semi-structured interviews, focus groups, observation, and documentary interviews.</p></div>
+    </div>
+
+    <div class="rule"></div>
+    <p style="max-width:680px;">The interactive model does not claim to statistically represent all artisan enterprises, in Pipili or elsewhere. It uses this fieldwork as an empirical foundation for exploring relationships and testing scenarios. A tool for thinking with the evidence, not a forecast.</p>
+
+    <h3 style="font-size:18px;margin-top:34px;margin-bottom:6px;">Limitations</h3>
+    <ul class="limitlist">
+      <li><b>Small, purposive/snowball sample.</b> 21 artisans, 17 traders, 11 consumers. Network bias is likely, and the findings are indicative of this fieldwork, not statistically representative of Pipili or of Indian artisans generally.</li>
+      <li><b>Five-day fieldwork window.</b> Seasonal effects, including the well-documented Rath Yatra demand spike, are described qualitatively but not measured.</li>
+      <li><b>Small consumer sample.</b> Any price/demand relationship tied to authenticity in this model is a transparent, editable assumption for exploration. Not a statistically estimated elasticity.</li>
+      <li><b>Authenticity is not assumed economically superior.</b> The underlying report documents a real tension between authenticity, affordability, market adaptation and livelihood survival; this model exposes that tension rather than resolving it in either direction.</li>
+      <li><b>Correlation, not established causation.</b> The Value Signal Gap places GI awareness, trader communication and consumer verification side by side. It does not claim that closing one gap causes the others to move.</li>
+      <li><b>This is a Pipili-specific model.</b> It is intentionally not a generic India-wide artisan platform; its parameters shouldn't be read onto other craft clusters without new fieldwork.</li>
+    </ul>
+
+    <h3 style="font-size:18px;margin-top:34px;margin-bottom:6px;">Model assumptions</h3>
+    <p class="small" style="margin-bottom:14px;">Everything below is a setting the model needs in order to run. Each is editable; changes apply immediately across every section.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 40px;">
+      <div>
+        <div class="srow"><label for="baseDemand">Base addressable demand, units/month <span class="val" id="v-baseDemand"></span></label><input type="range" id="baseDemand" min="200" max="2500" step="50"></div>
+        <div class="srow"><label for="fixedCosts">Fixed costs, ₹/month <span class="val" id="v-fixedCosts"></span></label><input type="range" id="fixedCosts" min="0" max="60000" step="500"></div>
+        <div class="srow"><label for="priceSensitivity">Price sensitivity of demand <span class="val" id="v-priceSensitivity"></span></label><input type="range" id="priceSensitivity" min="0.1" max="1.2" step="0.05"></div>
+        <div class="srow"><label for="repeatBoost">Repeat-purchase demand boost <span class="val" id="v-repeatBoost"></span></label><input type="range" id="repeatBoost" min="0" max="1.2" step="0.05"></div>
+      </div>
+      <div>
+        <div class="srow"><label for="authenticityDemandBonus">Authenticity → demand bonus, max % <span class="val" id="v-authenticityDemandBonus"></span></label><input type="range" id="authenticityDemandBonus" min="0" max="80" step="5"></div>
+        <div class="srow"><label for="authenticityPriceBonus">Authenticity → WTP bonus, max % <span class="val" id="v-authenticityPriceBonus"></span></label><input type="range" id="authenticityPriceBonus" min="0" max="80" step="5"></div>
+        <div class="srow"><label for="womensBaselineShare">Women's baseline higher-value share <span class="val" id="v-womensBaselineShare"></span></label><input type="range" id="womensBaselineShare" min="5" max="40" step="1"></div>
+        <div class="srow"><label for="womensHighValueMultiplier">Higher-value task pay multiplier <span class="val" id="v-womensHighValueMultiplier"></span></label><input type="range" id="womensHighValueMultiplier" min="1" max="2.5" step="0.1"></div>
+      </div>
+    </div>
+    <details style="margin-top:8px;"><summary>What each assumption does, and why it's illustrative rather than field-derived</summary>
+      <div class="details-body">
+        <p><b>Base addressable demand</b> : sets the monthly unit volume the model scales from. Illustrative: the fieldwork did not measure total addressable market size.</p>
+        <p><b>Fixed costs</b> : workshop, tools and overhead the enterprise must cover before profit. Illustrative placeholder, editable to match a real cost structure.</p>
+        <p><b>Price sensitivity</b> : how much modelled demand falls as price rises above the reference point. Illustrative; no price experiment was run in the field.</p>
+        <p><b>Repeat-purchase boost</b> : how much a higher repeat rate lifts modelled demand.</p>
+        <p><b>Authenticity → demand / WTP bonuses</b> : the two assumptions behind section 07. Directionally motivated by the 72.7% finding, but the size of the effect is illustrative, not estimated.</p>
+        <p><b>Women's baseline share / pay multiplier</b> :the baseline (~12%) reflects fieldwork description of women's limited access to cutting, design and sales; the multiplier is a stated, editable assumption about how much better-paid those tasks are, not a measured wage figure.</p>
+      </div>
+    </details>
+    <button class="btn btn-line ui" style="margin-top:18px;" onclick="resetSettings()">Reset assumptions to default</button>
+  </div>
+</section>
+
+<!-- ============================================================ 14 SOURCES + RESEARCHER'S NOTE ============================================================ -->
+<section id="s14">
+  <div class="wrap">
+    <div class="kicker"><span class="num">14</span>Sources</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;">
+      <div>
+        <h4 class="ui" style="font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-faint);margin-bottom:10px;">Primary</h4>
+        <p style="font-size:15px;">"Threads of Tradition: A Glimpse into the Art and Economy of Appliqué Work in Pipili, Odisha," FLAME University (2025–26) — artisan interviews, trader survey, consumer survey, focus groups, field observation, and documentary interviews conducted by as a part of the research.</p>
+      </div>
+      <div>
+        <h4 class="ui" style="font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-faint);margin-bottom:10px;">Secondary, cited in the underlying report</h4>
+        <p style="font-size:15px;">Geographical Indication Registry filing for Pipli Appliqué Work (2007); Ministry of Textiles compendium on GI-covered handicrafts (2017); Samall, "Applique Craft in Orissa, India" (1998); MacCannell, "Staged Authenticity" (1973); Benjamin, "The Work of Art in the Age of Mechanical Reproduction" (1935); and other academic and journalistic sources listed in the full report's bibliography.</p>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+
+    <div class="kicker" style="margin-top:0;"><span class="num">—</span>A note from the researcher</div>
+    <h2 class="q" style="font-size:26px;">Why a model, and not just a report</h2>
+    <p style="max-width:680px;">I went to Pipili wanting to understand something specific: why a craft with clear consumer demand and real cultural protection still leaves the people making it with so little. The report answers that with evidence. This page exists because a number like "producer value share: 16%" is easy to write and easy to skim past. But it's harder to skim past once you've moved the slider yourself and watched producer income and enterprise margin pull in opposite directions.</p>
+    <p style="max-width:680px;">A model like this can show a trade-off clearly. It cannot tell you which side of that trade-off is right, and it cannot substitute for the small sample and short fieldwork window behind it; both are stated plainly in section 13. What it can do is turn "artisans are underpaid" from a conclusion into a mechanism that can be tested.</p>
+  </div>
+</section>
+
+<footer class="ui">Pipili Simulator |  built on "Threads of Tradition," (2025–26)</footer>
+
+<script>
+/* ============================================================
+   CONFIG — edit these when adding media.
+   ============================================================ */
+const DOCUMENTARY_EMBED_URL = "https://www.youtube.com/watch?v=wVkbqHdr5FU"; // direct video link to avoid local preview embed restrictions
+const DOCUMENTARY_LOCAL_FILE = "images/documentary.mp4"; // local fallback if needed
+const DOCUMENTARY_CHAPTERS = [
+  // { time:"00:00", label:"Craft origins & ritual meaning" },
+];
+const RESEARCH_PHOTOS = [
+  { theme:"Craft production", src:"images/" + encodeURIComponent("Screenshot 2026-08-29 at 3.29.33\u202fpm.png"), caption:"" },
+  { theme:"Craft production", src:"images/" + encodeURIComponent("Screenshot 2026-08-29 at 3.29.48\u202fpm.png"), caption:"" },
+  { theme:"Craft production", src:"images/" + encodeURIComponent("Screenshot 2026-08-29 at 3.30.07\u202fpm.png"), caption:"" },
+  { theme:"Artisan labour", src:"images/" + encodeURIComponent("Screenshot 2026-08-29 at 3.30.41\u202fpm.png"), caption:"" },
+  { theme:"Artisan labour", src:"images/" + encodeURIComponent("Screenshot 2026-08-29 at 3.30.54\u202fpm.png"), caption:"" },
+  { theme:"Market", src:"images/" + encodeURIComponent("Screenshot 2026-08-29 at 3.31.10\u202fpm.png"), caption:"" },
+  { theme:"Place", src:"images/" + encodeURIComponent("Screenshot 2026-08-29 at 3.32.59\u202fpm.png"), caption:"" },
+];
+const PLACEHOLDER_THEMES = ["Craft production","Artisan labour","Market","Value chain","Gender & labour","Place"];
+
+/* ============================================================
+   MODEL STATE — unchanged calculation engine (12 locked variables)
+   ============================================================ */
+const state = {
+  touristShare: 55, dtcShare: 20, institutionalShare: 25,
+  price: 450,
+  handmadeLevel: 75,
+  materialCost: 90,
+  labourHours: 3.5,
+  labourCostHour: 40,
+  cac: 60,
+  repeatPurchase: 25,
+  producerValueShare: 16,
+  womensParticipation: 25,
+};
+const baseline = Object.assign({}, state);
+
+const settings = {
+  baseDemand: 900,
+  fixedCosts: 18000,
+  priceReferencePoint: 400,
+  priceSensitivity: 0.5,
+  repeatBoost: 0.6,
+  authenticityDemandBonus: 35,
+  authenticityPriceBonus: 40,
+  womensBaselineShare: 12,
+  womensHighValueMultiplier: 1.6,
+  channelReach: { tourist: 1.15, dtc: 0.55, institutional: 0.42 },
+  channelCostRate: { tourist: 0.05, dtc: 0.11, institutional: 0.04 },
+};
+const defaultSettings = JSON.parse(JSON.stringify(settings));
+let shockPct = 30;
+
+/* ============================================================
+   CALC ENGINE — logic preserved from v1, untouched
+   ============================================================ */
+function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+function fmtR(n){ return '₹' + Math.round(n).toLocaleString('en-IN'); }
+function fmt1(n){ return (Math.round(n*10)/10).toLocaleString('en-IN'); }
+
+function channelReachFactor(s){
+  return (s.touristShare/100)*settings.channelReach.tourist
+       + (s.dtcShare/100)*settings.channelReach.dtc
+       + (s.institutionalShare/100)*settings.channelReach.institutional;
+}
+function channelCostBlend(s){
+  return (s.touristShare/100)*settings.channelCostRate.tourist
+       + (s.dtcShare/100)*settings.channelCostRate.dtc
+       + (s.institutionalShare/100)*settings.channelCostRate.institutional;
+}
+function priceEffect(s){
+  return clamp(1 - settings.priceSensitivity*(s.price - settings.priceReferencePoint)/settings.priceReferencePoint, 0.35, 1.7);
+}
+function authDemandEffect(s){ return 1 + (settings.authenticityDemandBonus/100)*(s.handmadeLevel/100); }
+function repeatMultiplier(s){ return 1 + (s.repeatPurchase/100)*settings.repeatBoost; }
+
+function computeUnits(s, touristShockPct){
+  touristShockPct = touristShockPct || 0;
+  const pe = priceEffect(s), ae = authDemandEffect(s), rm = repeatMultiplier(s);
+  const touristReach = (s.touristShare/100)*settings.channelReach.tourist*(1-touristShockPct/100);
+  const dtcReach = (s.dtcShare/100)*settings.channelReach.dtc;
+  const instReach = (s.institutionalShare/100)*settings.channelReach.institutional;
+  const touristUnits = settings.baseDemand*touristReach*pe*ae*rm;
+  const dtcUnits = settings.baseDemand*dtcReach*pe*ae*rm;
+  const instUnits = settings.baseDemand*instReach*pe*ae*rm;
+  return { total: touristUnits+dtcUnits+instUnits, touristUnits, dtcUnits, instUnits };
+}
+
+function compute(s, touristShockPct){
+  const u = computeUnits(s, touristShockPct);
+  const units = u.total;
+  const revenue = units*s.price;
+  const materialTotal = units*s.materialCost;
+  const producerCompPerUnit = s.price*(s.producerValueShare/100);
+  const producerIncome = units*producerCompPerUnit;
+  const newCustomerFraction = 1-(s.repeatPurchase/100);
+  const acquisitionCost = units*newCustomerFraction*s.cac;
+  const ccBlend = channelCostBlend(s);
+  const channelCost = units*s.price*ccBlend;
+  const contributionMargin = revenue - materialTotal - producerIncome - acquisitionCost - channelCost;
+  const enterpriseProfit = contributionMargin - settings.fixedCosts;
+  const marginPct = revenue>0 ? (contributionMargin/revenue*100) : 0;
+  const incomePerHour = s.labourHours>0 ? (producerCompPerUnit/s.labourHours) : 0;
+  const wageGapPerHour = incomePerHour - s.labourCostHour;
+  const contributionPerUnit = s.price - s.materialCost - producerCompPerUnit - newCustomerFraction*s.cac - s.price*ccBlend;
+  const breakEvenUnits = contributionPerUnit>0 ? settings.fixedCosts/contributionPerUnit : Infinity;
+  const valueCapturePct = s.producerValueShare;
+  const upliftFactor = 1 + clamp((s.womensParticipation/100 - settings.womensBaselineShare/100),0,1)*(settings.womensHighValueMultiplier-1);
+  const womensIncomePerHour = incomePerHour*upliftFactor;
+  return { units, revenue, materialTotal, producerCompPerUnit, producerIncome,
+    acquisitionCost, channelCost, contributionMargin, enterpriseProfit, marginPct, incomePerHour,
+    wageGapPerHour, breakEvenUnits, valueCapturePct, womensIncomePerHour, upliftFactor,
+    touristUnits:u.touristUnits, dtcUnits:u.dtcUnits, instUnits:u.instUnits };
+}
+
+/* ============================================================
+   NARRATIVE LABELS + MECHANISM NOTES (for "What changed")
+   ============================================================ */
+const VARLABEL = {
+  touristShare:'tourist share', dtcShare:'direct-to-consumer share', institutionalShare:'institutional share',
+  price:'average selling price', handmadeLevel:'handmade / authenticity level',
+  materialCost:'material cost', labourHours:'labour hours per unit', labourCostHour:'target labour cost per hour',
+  cac:'customer acquisition cost', repeatPurchase:'repeat purchase rate',
+  producerValueShare:'producer value share', womensParticipation:"women's participation in higher-value tasks",
+};
+const VARMECH = {
+  touristShare:"Channel mix changes both how many units sell and the blended acquisition/channel cost, so revenue and margin can move even though price hasn't changed.",
+  dtcShare:"Channel mix changes both how many units sell and the blended acquisition/channel cost, so revenue and margin can move even though price hasn't changed.",
+  institutionalShare:"Channel mix changes both how many units sell and the blended acquisition/channel cost, so revenue and margin can move even though price hasn't changed.",
+  price:"A higher price raises revenue per unit, but the model assumes some demand is lost above the reference price point — the net effect on revenue depends on which force is larger.",
+  handmadeLevel:"Raising authenticity lifts modelled demand and willingness to pay under the model's stated assumption. It does not, by itself, change how the price is split between producer and enterprise.",
+  materialCost:"Material cost is subtracted directly from the price per unit, so it moves margin and profit without changing revenue or units sold.",
+  labourHours:"This changes the benchmark the producer's actual pay-per-hour is compared against — it does not, by itself, change what the producer is paid.",
+  labourCostHour:"This changes the benchmark the producer's actual pay-per-hour is compared against — it does not, by itself, change what the producer is paid.",
+  cac:"Acquisition cost is charged only on new, non-repeat customers, so its effect on margin depends heavily on the repeat-purchase rate you've set.",
+  repeatPurchase:"A higher repeat rate both lifts modelled demand and lowers the effective acquisition-cost burden per order.",
+  producerValueShare:"Under the model's assumptions, a higher producer share pays the producer more per unit directly out of the same consumer price — which mechanically narrows the enterprise's margin unless price or volume also rise.",
+  womensParticipation:"This shifts the modelled share of higher-value tasks reaching women and the associated income uplift; it does not change total producer income shown elsewhere on this page.",
+};
+const SLIDERFMT = {
+  touristShare:v=>v+'%', dtcShare:v=>v+'%', institutionalShare:v=>v+'%',
+  price:v=>fmtR(v), handmadeLevel:v=>v+'%',
+  materialCost:v=>fmtR(v), labourHours:v=>fmt1(v)+' hrs', labourCostHour:v=>fmtR(v)+'/hr',
+  cac:v=>fmtR(v), repeatPurchase:v=>v+'%',
+  producerValueShare:v=>v+'%', womensParticipation:v=>v+'%',
+};
+
+function deltaSentence(label, oldV, newV, fmt, unit){
+  const d = newV-oldV;
+  if(Math.abs(d) < 0.05*Math.max(1,Math.abs(oldV)) && Math.abs(d) < 1) return `<p>${label} is essentially unchanged.</p>`;
+  return `<p>${label} ${d>0?'rises':'falls'} by <b>${fmt(Math.abs(d))}${unit||''}</b>, to ${fmt(newV)}${unit||''}.</p>`;
+}
+
+function renderWhatChanged(id, oldState){
+  const oldR = compute(oldState);
+  const newR = compute(state);
+  let html = `<p>You moved <b>${VARLABEL[id]}</b> from ${SLIDERFMT[id](oldState[id])} to ${SLIDERFMT[id](state[id])}.</p>`;
+  html += deltaSentence('Monthly revenue', oldR.revenue, newR.revenue, fmtR);
+  html += deltaSentence('Producer income', oldR.producerIncome, newR.producerIncome, fmtR);
+  html += deltaSentence('Producer value capture', oldR.valueCapturePct, newR.valueCapturePct, fmt1, ' points');
+  html += deltaSentence('Enterprise contribution margin', oldR.marginPct, newR.marginPct, fmt1, ' points');
+  html += `<p class="wc-why">Under the model's assumptions: ${VARMECH[id]}</p>`;
+  document.getElementById('wc-body').innerHTML = html;
+}
+
+/* ============================================================
+   SLIDER WIRING
+   ============================================================ */
+const sliderDefs = [
+  ['touristShare', v=>v+'%'], ['dtcShare', v=>v+'%'], ['institutionalShare', v=>v+'%'],
+  ['price', v=>fmtR(v)], ['handmadeLevel', v=>v+'%'],
+  ['materialCost', v=>fmtR(v)], ['labourHours', v=>fmt1(v)+' hrs'], ['labourCostHour', v=>fmtR(v)+'/hr'],
+  ['cac', v=>fmtR(v)], ['repeatPurchase', v=>v+'%'],
+  ['producerValueShare', v=>v+'%'], ['womensParticipation', v=>v+'%'],
+];
+const settingsDefs = [
+  ['baseDemand', v=>v+' u/mo'], ['fixedCosts', v=>fmtR(v)], ['priceSensitivity', v=>fmt1(v)], ['repeatBoost', v=>fmt1(v)],
+  ['authenticityDemandBonus', v=>'+'+v+'%'], ['authenticityPriceBonus', v=>'+'+v+'%'],
+  ['womensBaselineShare', v=>v+'%'], ['womensHighValueMultiplier', v=>fmt1(v)+'×'],
+];
+function isChannel(id){ return ['touristShare','dtcShare','institutionalShare'].includes(id); }
+
+function wireSlider(id, fmt, target, isModelVar){
+  const el = document.getElementById(id);
+  el.value = target[id];
+  document.getElementById('v-'+id).textContent = fmt(target[id]);
+  el.addEventListener('input', ()=>{
+    const snapshot = isModelVar ? Object.assign({}, state) : null;
+    let val = parseFloat(el.value);
+    target[id] = val;
+    if(isChannel(id)) balanceChannels(id);
+    document.getElementById('v-'+id).textContent = fmt(target[id]);
+    if(isChannel(id)){
+      ['touristShare','dtcShare','institutionalShare'].forEach(cid=>{
+        document.getElementById(cid).value = state[cid];
+        document.getElementById('v-'+cid).textContent = state[cid]+'%';
+      });
+    }
+    renderAll();
+    if(isModelVar) renderWhatChanged(id, snapshot);
+  });
+}
+function balanceChannels(changedId){
+  const ids = ['touristShare','dtcShare','institutionalShare'];
+  const others = ids.filter(i=>i!==changedId);
+  const changedVal = state[changedId];
+  const remaining = 100 - changedVal;
+  const otherSum = others.reduce((a,b)=>a+state[b],0);
+  if(otherSum<=0){ state[others[0]] = remaining; state[others[1]] = 0; }
+  else{
+    others.forEach(o=>{ state[o] = Math.round(remaining*(state[o]/otherSum)); });
+    const diff = 100 - (state[changedId]+state[others[0]]+state[others[1]]);
+    state[others[0]] += diff;
+  }
+}
+sliderDefs.forEach(([id,fmt])=>wireSlider(id,fmt,state,true));
+settingsDefs.forEach(([id,fmt])=>wireSlider(id,fmt,settings,false));
+
+function resetToBaseline(){
+  Object.keys(baseline).forEach(k=>state[k]=baseline[k]);
+  sliderDefs.forEach(([id,fmt])=>{ document.getElementById(id).value = state[id]; document.getElementById('v-'+id).textContent = fmt(state[id]); });
+  document.getElementById('wc-body').innerHTML = '<p>Reset to the Pipili baseline. Move any control to see what changes.</p>';
+  renderAll();
+}
+function resetSettings(){
+  Object.assign(settings, JSON.parse(JSON.stringify(defaultSettings)));
+  settingsDefs.forEach(([id,fmt])=>{ document.getElementById(id).value = settings[id]; document.getElementById('v-'+id).textContent = fmt(settings[id]); });
+  renderAll();
+}
+function setShock(pct){
+  shockPct = pct;
+  ['shockBtn30','shockBtn50','shockBtn0'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  ({30:'shockBtn30',50:'shockBtn50',0:'shockBtn0'})[pct] && document.getElementById(({30:'shockBtn30',50:'shockBtn50',0:'shockBtn0'})[pct]).classList.add('active');
+  renderResilience();
+}
+
+/* ============================================================
+   CHARTS
+   ============================================================ */
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.font.size = 11.5;
+Chart.defaults.color = '#5B5548';
+const PAL = { navy:'#161E31', terracotta:'#B24B2C', ochre:'#B98A2E', teal:'#3A6B62', line:'rgba(33,28,22,0.10)', mat:'#8B8474' };
+let chartPriceSplit, chartWageGap, chartResilience, chartResilienceProducer, chartAuthenticity, chartSignalGap, chartScenarios;
+
+function initCharts(){
+  chartPriceSplit = new Chart(document.getElementById('chartPriceSplit'), {
+    type:'bar',
+    data:{ labels:['Price split'], datasets:[
+      {label:'Materials', data:[0], backgroundColor:PAL.mat},
+      {label:'Producer', data:[0], backgroundColor:PAL.ochre},
+      {label:'Acquisition', data:[0], backgroundColor:PAL.terracotta},
+      {label:'Channel / transaction', data:[0], backgroundColor:PAL.navy},
+      {label:'Enterprise margin', data:[0], backgroundColor:PAL.teal},
+    ]},
+    options:{ indexAxis:'y', responsive:true, plugins:{legend:{position:'bottom'}}, scales:{x:{stacked:true, grid:{color:PAL.line}}, y:{stacked:true, grid:{display:false}}} }
+  });
+  chartWageGap = new Chart(document.getElementById('chartWageGap'), {
+    type:'bar',
+    data:{ labels:['Target wage (₹/hr)','Producer actual (₹/hr)'], datasets:[{ data:[0,0], backgroundColor:[PAL.navy, PAL.terracotta] }] },
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{grid:{color:PAL.line}}, x:{grid:{display:false}}} }
+  });
+  chartResilience = new Chart(document.getElementById('chartResilience'), {
+    type:'bar',
+    data:{ labels:['No shock','Under shock'], datasets:[
+      {label:'Your channel mix', data:[0,0], backgroundColor:PAL.terracotta},
+      {label:'Diversified 33/33/34', data:[0,0], backgroundColor:PAL.teal},
+    ]},
+    options:{ responsive:true, plugins:{legend:{position:'bottom'}}, scales:{y:{grid:{color:PAL.line}}, x:{grid:{display:false}}} }
+  });
+  chartResilienceProducer = new Chart(document.getElementById('chartResilienceProducer'), {
+    type:'bar',
+    data:{ labels:['No shock','Under shock'], datasets:[
+      {label:'Producer income — your mix', data:[0,0], backgroundColor:PAL.ochre},
+      {label:'Producer income — diversified', data:[0,0], backgroundColor:PAL.navy},
+    ]},
+    options:{ responsive:true, plugins:{legend:{position:'bottom'}}, scales:{y:{grid:{color:PAL.line}}, x:{grid:{display:false}}} }
+  });
+  chartAuthenticity = new Chart(document.getElementById('chartAuthenticity'), {
+    type:'line',
+    data:{ labels:[0,10,20,30,40,50,60,70,80,90,100], datasets:[
+      {label:'Modelled units/month', data:[], borderColor:PAL.navy, backgroundColor:'transparent', yAxisID:'y', tension:0.3},
+      {label:'Producer value capture (₹/unit)', data:[], borderColor:PAL.terracotta, backgroundColor:'transparent', yAxisID:'y1', tension:0.3},
+    ]},
+    options:{ responsive:true, interaction:{mode:'index',intersect:false}, plugins:{legend:{position:'bottom'}},
+      scales:{ y:{position:'left', grid:{color:PAL.line}, title:{display:true,text:'units/month'}},
+               y1:{position:'right', grid:{display:false}, title:{display:true,text:'₹ per unit'}},
+               x:{title:{display:true,text:'handmade / authenticity level'}, grid:{display:false}} } }
+  });
+  chartSignalGap = new Chart(document.getElementById('chartSignalGap'), {
+    type:'bar',
+    data:{ labels:['Artisan GI awareness','Trader GI advertising','Consumer verification','Consumer premium WTP'],
+      datasets:[{ data:[42.9,5.9,63.6,72.7], backgroundColor:[PAL.navy,PAL.terracotta,PAL.ochre,PAL.teal] }] },
+    options:{ indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{x:{max:100, grid:{color:PAL.line}, title:{display:true,text:'% of respondents'}}, y:{grid:{display:false}}} }
+  });
+  chartScenarios = new Chart(document.getElementById('chartScenarios'), {
+    type:'bar',
+    data:{ labels:['Revenue (₹00s)','Contribution margin %','Producer income (₹00s)','Value capture %'], datasets:[] },
+    options:{ responsive:true, plugins:{legend:{position:'bottom'}}, scales:{y:{grid:{color:PAL.line}}, x:{grid:{display:false}}} }
+  });
+}
+
+/* ============================================================
+   RENDER — SIMULATOR
+   ============================================================ */
+function renderSimulator(){
+  const r = compute(state);
+  document.getElementById('k-units').textContent = Math.round(r.units).toLocaleString('en-IN');
+  document.getElementById('k-revenue').textContent = fmtR(r.revenue);
+  document.getElementById('k-margin').textContent = fmtR(r.contributionMargin) + ' (' + fmt1(r.marginPct) + '%)';
+  document.getElementById('k-profit').textContent = fmtR(r.enterpriseProfit);
+  document.getElementById('k-pincome').textContent = fmtR(r.producerIncome);
+  document.getElementById('k-phour').textContent = fmtR(r.incomePerHour);
+  document.getElementById('k-capture').textContent = fmt1(r.valueCapturePct) + '%';
+  document.getElementById('k-breakeven').textContent = isFinite(r.breakEvenUnits) ? Math.round(r.breakEvenUnits).toLocaleString('en-IN') : 'not reached at these settings';
+  document.getElementById('capPrice').textContent = fmtR(state.price);
+
+  chartPriceSplit.data.datasets[0].data = [r.materialTotal];
+  chartPriceSplit.data.datasets[1].data = [r.producerIncome];
+  chartPriceSplit.data.datasets[2].data = [r.acquisitionCost];
+  chartPriceSplit.data.datasets[3].data = [r.channelCost];
+  chartPriceSplit.data.datasets[4].data = [Math.max(r.contributionMargin,0)];
+  chartPriceSplit.update('none');
+
+  chartWageGap.data.datasets[0].data = [state.labourCostHour, r.incomePerHour];
+  chartWageGap.data.datasets[0].backgroundColor = [PAL.navy, r.incomePerHour>=state.labourCostHour?PAL.teal:PAL.terracotta];
+  chartWageGap.update('none');
+  document.getElementById('wageGapCaption').textContent = r.incomePerHour>=state.labourCostHour
+    ? `At these settings, the producer's effective pay (${fmtR(r.incomePerHour)}/hr) meets or exceeds the target wage.`
+    : `At these settings, the producer's effective pay (${fmtR(r.incomePerHour)}/hr) falls short of the ${fmtR(state.labourCostHour)}/hr target by ${fmtR(Math.abs(r.wageGapPerHour))} — the pattern the ₹70-item field observation describes.`;
+  return r;
+}
+
+/* ============================================================
+   RENDER — VALUE MAP
+   ============================================================ */
+function renderValueMap(){
+  const r = compute(state);
+  const price = state.price;
+  const segs = [
+    { label:'Materials', value:state.materialCost, color:PAL.mat },
+    { label:'Producer', value:r.producerCompPerUnit, color:PAL.ochre },
+    { label:'Acquisition', value:(1-state.repeatPurchase/100)*state.cac, color:PAL.terracotta },
+    { label:'Channel / transaction', value:price*channelCostBlend(state), color:PAL.navy },
+  ];
+  const spent = segs.reduce((a,s)=>a+s.value,0);
+  const enterprise = Math.max(price-spent,0);
+  segs.push({label:'Enterprise', value:enterprise, color:PAL.teal});
+  const total = segs.reduce((a,s)=>a+s.value,0) || 1;
+
+  const svg = document.getElementById('vcmSvg');
+  const leftX=60, rightX=940, leftY=190, bandH=70;
+  let html = '';
+  html += `<text x="${leftX}" y="55" fill="#F3EEE1" font-family="Inter,sans-serif" font-size="13">Consumer price</text>`;
+  html += `<rect x="${leftX}" y="${leftY-bandH/2}" width="90" height="${bandH}" fill="#F3EEE1" rx="2"/>`;
+  html += `<text x="${leftX+45}" y="${leftY+5}" text-anchor="middle" fill="#0D1424" font-family="IBM Plex Mono" font-size="13" font-weight="600">${fmtR(price)}</text>`;
+
+  const nodeX = rightX; let nodeYStart = 40; const totalH = 300; let cursor = 0;
+  segs.forEach((s)=>{
+    const h = Math.max((s.value/total)*totalH, 14);
+    const y0 = nodeYStart+cursor;
+    const y0Left = leftY-bandH/2 + (bandH*(cursor/totalH));
+    const y1Left = leftY-bandH/2 + (bandH*((cursor+h)/totalH));
+    html += `<path d="M ${leftX+90} ${y0Left} C ${(leftX+90+nodeX)/2} ${y0Left}, ${(leftX+90+nodeX)/2} ${y0}, ${nodeX} ${y0}
+             L ${nodeX} ${y0+h} C ${(leftX+90+nodeX)/2} ${y0+h}, ${(leftX+90+nodeX)/2} ${y1Left}, ${leftX+90} ${y1Left} Z"
+             fill="${s.color}" opacity="0.82"/>`;
+    html += `<rect x="${nodeX}" y="${y0}" width="10" height="${h}" fill="${s.color}"/>`;
+    html += `<text x="${nodeX+18}" y="${y0+h/2-6}" fill="#F3EEE1" font-family="Inter,sans-serif" font-size="12">${s.label}</text>`;
+    html += `<text x="${nodeX+18}" y="${y0+h/2+10}" fill="${s.color}" font-family="IBM Plex Mono" font-size="12" font-weight="600">${fmtR(s.value)} (${fmt1(s.value/total*100)}%)</text>`;
+    cursor += h;
+  });
+  svg.innerHTML = html;
+  document.getElementById('vcmLegend').innerHTML = segs.map(s=>`<span><i style="background:${s.color}"></i>${s.label}</span>`).join('');
+  document.getElementById('titlePrice').textContent = fmtR(price);
+
+  // before/after bars
+  function segsFor(s){
+    const rr = compute(s);
+    const m=[
+      {v:s.materialCost,c:PAL.mat},{v:rr.producerCompPerUnit,c:PAL.ochre},
+      {v:(1-s.repeatPurchase/100)*s.cac,c:PAL.terracotta},{v:s.price*channelCostBlend(s),c:PAL.navy}
+    ];
+    const spentB = m.reduce((a,x)=>a+x.v,0);
+    m.push({v:Math.max(s.price-spentB,0),c:PAL.teal});
+    const tot = m.reduce((a,x)=>a+x.v,0)||1;
+    return {m,tot,rr};
+  }
+  function drawBar(elId, s){
+    const {m,tot} = segsFor(s);
+    document.getElementById(elId).innerHTML = m.map(x=>`<div class="ba-seg" style="width:${(x.v/tot*100).toFixed(1)}%;background:${x.c}"></div>`).join('');
+  }
+  drawBar('baBarBase', baseline);
+  drawBar('baBarNow', state);
+  const rb = compute(baseline);
+  const deltaCapture = r.valueCapturePct - rb.valueCapturePct;
+  const deltaAbs = r.producerCompPerUnit - rb.producerCompPerUnit;
+  document.getElementById('baSummary').innerHTML = `Producer value captured: <b>${fmt1(rb.valueCapturePct)}% → ${fmt1(r.valueCapturePct)}%</b>. `+
+    `${deltaAbs>=0?'Additional':'Reduced'} producer value: <b>${deltaAbs>=0?'+':''}${fmtR(deltaAbs)} per unit</b>, at a price of ${fmtR(state.price)} vs. the baseline's ${fmtR(baseline.price)}.`;
+
+}
+
+/* ============================================================
+   RENDER — RESILIENCE
+   ============================================================ */
+function renderResilience(){
+  const base = compute(state, 0);
+  const shocked = compute(state, shockPct);
+  const diversified = Object.assign({}, state, {touristShare:33, dtcShare:33, institutionalShare:34});
+  const divBase = compute(diversified, 0);
+  const divShocked = compute(diversified, shockPct);
+
+  chartResilience.data.datasets[0].data = [base.revenue, shocked.revenue];
+  chartResilience.data.datasets[1].data = [divBase.revenue, divShocked.revenue];
+  chartResilience.update('none');
+  chartResilienceProducer.data.datasets[0].data = [base.producerIncome, shocked.producerIncome];
+  chartResilienceProducer.data.datasets[1].data = [divBase.producerIncome, divShocked.producerIncome];
+  chartResilienceProducer.update('none');
+
+  const exposure = base.revenue>0 ? (1-shocked.revenue/base.revenue)*100 : 0;
+  const exposureDiv = divBase.revenue>0 ? (1-divShocked.revenue/divBase.revenue)*100 : 0;
+  document.getElementById('res-exposure').textContent = fmt1(exposure)+'%';
+  document.getElementById('res-exposure-div').textContent = fmt1(exposureDiv)+'%';
+  const savedPts = exposure - exposureDiv;
+  document.getElementById('res-explain').innerHTML = shockPct===0
+    ? `No shock is currently applied — both mixes show their baseline revenue.`
+    : `Under a ${shockPct}% fall in tourist demand, your current mix (${state.touristShare}% tourist) loses <b>${fmt1(exposure)}%</b> of revenue. A diversified 33/33/34 mix loses <b>${fmt1(exposureDiv)}%</b> under the same shock — a difference of ${fmt1(Math.abs(savedPts))} percentage points. Whether that trade is worth making depends on what diversifying costs in reach and price, which section 04 lets you test directly.`;
+}
+
+/* ============================================================
+   RENDER — AUTHENTICITY
+   ============================================================ */
+function renderAuthenticity(){
+  document.getElementById('authAssumeDemand').textContent = settings.authenticityDemandBonus;
+  document.getElementById('authAssumeWTP').textContent = settings.authenticityPriceBonus;
+  const levels = [0,10,20,30,40,50,60,70,80,90,100];
+  const unitsArr = [], captureArr = [];
+  levels.forEach(l=>{
+    const s = Object.assign({}, state, {handmadeLevel:l});
+    const r = compute(s);
+    unitsArr.push(Math.round(r.units));
+    captureArr.push(Math.round(r.producerCompPerUnit));
+  });
+  chartAuthenticity.data.datasets[0].data = unitsArr;
+  chartAuthenticity.data.datasets[1].data = captureArr;
+  chartAuthenticity.update('none');
+}
+
+/* ============================================================
+   RENDER — SCENARIOS
+   ============================================================ */
+const scenarioDefs = {
+  current: { name:'Current / base', touristShare:55, dtcShare:20, institutionalShare:25, price:450, handmadeLevel:75, materialCost:90, labourHours:3.5, labourCostHour:40, cac:60, repeatPurchase:25, producerValueShare:16, womensParticipation:25 },
+  dtc: { name:'DTC-led', touristShare:25, dtcShare:60, institutionalShare:15, price:650, handmadeLevel:85, materialCost:100, labourHours:3.5, labourCostHour:45, cac:130, repeatPurchase:40, producerValueShare:26, womensParticipation:35 },
+  diversified: { name:'Diversified premium', touristShare:34, dtcShare:33, institutionalShare:33, price:750, handmadeLevel:92, materialCost:110, labourHours:4, labourCostHour:50, cac:100, repeatPurchase:35, producerValueShare:30, womensParticipation:45 },
+  institutional: { name:'Institutional-led', touristShare:20, dtcShare:15, institutionalShare:65, price:550, handmadeLevel:80, materialCost:95, labourHours:3.5, labourCostHour:42, cac:40, repeatPurchase:55, producerValueShare:20, womensParticipation:30 },
+};
+let activeScenarios = ['current','dtc','diversified','institutional'];
+
+function initScenarioPicker(){
+  const wrap = document.getElementById('scenarioPicker');
+  wrap.innerHTML='';
+  Object.keys(scenarioDefs).forEach(k=>{
+    const b = document.createElement('button');
+    b.className='chip active'; b.textContent = scenarioDefs[k].name; b.dataset.k=k;
+    b.onclick = ()=>{
+      if(activeScenarios.includes(k)){ if(activeScenarios.length>1){ activeScenarios = activeScenarios.filter(x=>x!==k); b.classList.remove('active'); } }
+      else { activeScenarios.push(k); b.classList.add('active'); }
+      renderScenarios();
+    };
+    wrap.appendChild(b);
+  });
+}
+
+function renderScenarios(){
+  const colors = {current:PAL.navy, dtc:PAL.terracotta, diversified:PAL.ochre, institutional:PAL.teal};
+  const labels = ['Revenue (₹00s/mo)','Contribution margin %','Producer income (₹00s/mo)','Value capture %'];
+  const datasets = activeScenarios.map(k=>{
+    const r = compute(scenarioDefs[k]);
+    return { label: scenarioDefs[k].name, backgroundColor: colors[k], data:[r.revenue/100, r.marginPct, r.producerIncome/100, r.valueCapturePct] };
+  });
+  chartScenarios.data.labels = labels;
+  chartScenarios.data.datasets = datasets;
+  chartScenarios.update('none');
+
+  const tbl = document.getElementById('scenarioTable');
+  let bestCapture = -1, bestKey=null;
+  activeScenarios.forEach(k=>{ const r=compute(scenarioDefs[k]); if(r.valueCapturePct>bestCapture){bestCapture=r.valueCapturePct; bestKey=k;} });
+  let html = '<tr><th>Scenario</th><th class="num">Units/mo</th><th class="num">Revenue</th><th class="num">Margin %</th><th class="num">Enterprise profit</th><th class="num">Producer income</th><th class="num">₹/labour hr</th><th class="num">Value capture %</th></tr>';
+  activeScenarios.forEach(k=>{
+    const r = compute(scenarioDefs[k]);
+    html += `<tr class="${k===bestKey?'best':''}"><td>${scenarioDefs[k].name}</td><td class="num">${Math.round(r.units)}</td><td class="num">${fmtR(r.revenue)}</td><td class="num">${fmt1(r.marginPct)}%</td><td class="num">${fmtR(r.enterpriseProfit)}</td><td class="num">${fmtR(r.producerIncome)}</td><td class="num">${fmtR(r.incomePerHour)}</td><td class="num">${fmt1(r.valueCapturePct)}%</td></tr>`;
+  });
+  tbl.innerHTML = html;
+
+  if(activeScenarios.includes('diversified') && activeScenarios.includes('current')){
+    const rc = compute(scenarioDefs.current), rd = compute(scenarioDefs.diversified);
+    document.getElementById('scenarioInterpretation').innerHTML = `
+      <p style="max-width:680px;">Under these assumptions, the <b>diversified premium</b> scenario raises producer value capture from ${fmt1(rc.valueCapturePct)}% to ${fmt1(rd.valueCapturePct)}% and producer income/hour from ${fmtR(rc.incomePerHour)} to ${fmtR(rd.incomePerHour)}, while also reducing tourist-channel concentration from ${scenarioDefs.current.touristShare}% to ${scenarioDefs.diversified.touristShare}%.</p>
+      <p style="max-width:680px;"><b>Which assumptions drive this result?</b> Mainly a higher producer value share (16%→30%), a higher assumed authenticity level, and a more even channel mix — each pulls producer income up; the higher price also has to hold against the model's price-sensitivity assumption for the scenario to work as shown.</p>
+      <p style="max-width:680px;"><b>What could change the conclusion?</b> If real-world price sensitivity is higher than assumed, or if the DTC/institutional channels don't actually reach the volume the reach-factor assumptions imply, the diversified scenario's revenue advantage would shrink or disappear — the stress test below tests exactly this.</p>`;
+  } else {
+    document.getElementById('scenarioInterpretation').innerHTML = '';
+  }
+
+  renderSensitivity();
+}
+
+function renderSensitivity(){
+  const rows = [
+    { name:'Price sensitivity of demand', key:'priceSensitivity', target:'settings', values:[0.25,0.5,0.75] },
+    { name:'Authenticity → willingness-to-pay bonus', key:'authenticityPriceBonus', target:'settings', values:[20,40,60] },
+    { name:'Customer acquisition cost', key:'cac', target:'state', values:[Math.round(state.cac*0.5), state.cac, Math.round(state.cac*1.5)] },
+  ];
+  let html = '<table><tr><th>Assumption</th><th class="num">Low</th><th class="num">Central</th><th class="num">High</th></tr>';
+  rows.forEach(row=>{
+    const cells = row.values.map(v=>{
+      let s = Object.assign({}, state), st = Object.assign({}, settings);
+      if(row.target==='settings') st[row.key]=v; else s[row.key]=v;
+      const savedSettings = Object.assign({}, settings);
+      Object.assign(settings, st);
+      const r = compute(s);
+      Object.assign(settings, savedSettings);
+      return `${fmtR(r.producerIncome)}<br><span class="mono" style="font-size:11px;color:var(--ink-faint);">${fmt1(r.valueCapturePct)}% capture</span>`;
+    });
+    html += `<tr><td>${row.name}</td><td class="num">${cells[0]}</td><td class="num">${cells[1]}</td><td class="num">${cells[2]}</td></tr>`;
+  });
+  html += '</table>';
+  document.getElementById('sensitivityTable').innerHTML = html;
+}
+
+/* ============================================================
+   RENDER — THREE RETURNS
+   ============================================================ */
+function environmentalNote(handmadeLevel){
+  if(handmadeLevel>=70) return 'At this authenticity level, natural-fibre and traditional-dye use is likely dominant.';
+  if(handmadeLevel>=40) return 'At this authenticity level, moderate synthetic material use is likely.';
+  return 'At this authenticity level, higher reliance on synthetic fabric/thread is likely.';
+}
+function renderReturns(){
+  const r = compute(state);
+  const giSignal = (42.9+5.9+63.6)/3;
+  document.getElementById('ed-rev').textContent = fmtR(r.revenue);
+  document.getElementById('ed-margin').textContent = fmt1(r.marginPct)+'%';
+  document.getElementById('ed-profit').textContent = fmtR(r.enterpriseProfit);
+  document.getElementById('ed-be').textContent = isFinite(r.breakEvenUnits)?Math.round(r.breakEvenUnits):'not reached';
+  document.getElementById('pd-inc').textContent = fmtR(r.producerIncome);
+  document.getElementById('pd-hr').textContent = fmtR(r.incomePerHour);
+  document.getElementById('pd-gap').textContent = (r.wageGapPerHour>=0?'+':'')+fmtR(r.wageGapPerHour)+'/hr';
+  document.getElementById('pd-women').textContent = fmt1((r.upliftFactor-1)*100)+'% ('+fmtR(r.womensIncomePerHour)+'/hr)';
+  document.getElementById('hd-auth').textContent = state.handmadeLevel+'%';
+  document.getElementById('hd-gi').textContent = fmt1(giSignal)+'%';
+  document.getElementById('hd-women').textContent = state.womensParticipation+'%';
+  document.getElementById('hd-env-inline').textContent = environmentalNote(state.handmadeLevel);
+}
+
+/* ============================================================
+   RENDER — PHOTOS + DOCUMENTARY
+   ============================================================ */
+function renderPhotos(){
+  const grid = document.getElementById('photoGrid');
+  if(RESEARCH_PHOTOS.length){
+    grid.innerHTML = RESEARCH_PHOTOS.map(p=>`
+      <div class="phototile">
+        <img src="${p.src}" alt="">
+      </div>`).join('');
+  } else {
+    grid.innerHTML = PLACEHOLDER_THEMES.map(t=>`<div class="phototile" style="background:var(--paper-2);border:1px dashed var(--rule);"></div>`).join('');
+  }
+}
+function renderDocumentary(){
+  if(DOCUMENTARY_EMBED_URL){
+    document.getElementById('docContainer').innerHTML = `
+      <div class="doc-embed-wrap" style="background:#000;border-radius:3px;overflow:hidden;padding:28px 20px;text-align:left;">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div style="width:36px;height:36px;border-radius:8px;background:#ff0033;display:grid;place-items:center;box-shadow:0 0 0 1px rgba(255,255,255,0.18);">
+            <div style="width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-left:14px solid white;margin-left:4px;"></div>
+          </div>
+          <div style="font-family:'Fraunces',serif;font-size:26px;color:#F3EEE1;line-height:1.1;">YouTube</div>
+        </div>
+        <div style="margin-top:18px;color:#F3EEE1;font-family:'Fraunces',serif;font-size:clamp(24px,2.4vw,42px);line-height:1.08;max-width:660px;">Video player configuration error</div>
+        <div style="margin-top:24px;display:flex;gap:16px;flex-wrap:wrap;">
+          <a href="${DOCUMENTARY_EMBED_URL}" target="_blank" rel="noreferrer" style="display:inline-block;padding:14px 22px;border-radius:999px;background:#F3EEE1;color:#111827;text-decoration:none;font-family:'Inter',sans-serif;font-weight:700;">Watch video on YouTube</a>
+          <a href="${DOCUMENTARY_EMBED_URL}" target="_blank" rel="noreferrer" style="display:inline-block;padding:14px 22px;border-radius:999px;background:rgba(255,255,255,0.1);color:#F3EEE1;text-decoration:none;font-family:'Inter',sans-serif;font-weight:600;border:1px solid rgba(255,255,255,0.2);">Learn more</a>
+        </div>
+      </div>
+      <p class="small" style="margin-top:14px; text-align:center;">
+        Open the video directly on <a href="${DOCUMENTARY_EMBED_URL}" target="_blank" rel="noreferrer">YouTube</a> if it doesn’t load in the preview.
+      </p>
+    `;
+  } else if(DOCUMENTARY_LOCAL_FILE){
+    const videoSrc = DOCUMENTARY_LOCAL_FILE;
+    document.getElementById('docContainer').innerHTML = `<div class="doc-embed-wrap"><video controls playsinline preload="auto" width="100%" style="display:block;background:#000;max-height:520px;object-fit:contain;"><source src="${videoSrc}" type="video/mp4">Your browser can't play this video file.</video></div>`;
+  }
+  const cl = document.getElementById('chapterList');
+  cl.innerHTML = DOCUMENTARY_CHAPTERS.map(c=>`<li><span class="cl-time">${c.time}</span>${c.label}</li>`).join('');
+}
+
+/* ============================================================
+   MASTER RENDER + SCROLLSPY
+   ============================================================ */
+function renderAll(){
+  renderSimulator();
+  renderValueMap();
+  renderResilience();
+  renderAuthenticity();
+  renderReturns();
+}
+
+initCharts();
+initScenarioPicker();
+renderScenarios();
+renderPhotos();
+renderDocumentary();
+renderAll();
+
+const navLinks = document.querySelectorAll('.jumplink');
+const sections = Array.from(navLinks).map(l=>document.getElementById(l.dataset.nav)).filter(Boolean);
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      navLinks.forEach(l=>l.classList.toggle('active', l.dataset.nav===e.target.id));
+    }
+  });
+}, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+sections.forEach(s=>io.observe(s));
+</script>
+</body>
+</html>

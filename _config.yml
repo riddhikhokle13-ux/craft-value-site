@@ -1,0 +1,25 @@
+# Jekyll configuration for GitHub Pages
+title: Craft / Value
+description: A working model of value capture in Pipili's appliqué economy
+url: https://example.github.io/craft-value-site
+baseurl: /craft-value-site
+
+# Build settings
+theme: jekyll-theme-minimal
+markdown: kramdown
+
+# GitHub Pages
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+# Include dotfiles and other files
+include:
+  - .gitignore
+
+# Exclude from processing
+exclude:
+  - .git
+  - .gitignore
+  - Gemfile
+  - Gemfile.lock
